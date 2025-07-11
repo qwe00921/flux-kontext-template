@@ -1,3 +1,4 @@
+export const runtime = 'edge';
 import { NextRequest, NextResponse } from "next/server"
 
 // Cloudflare Turnstile API响应的类型定义

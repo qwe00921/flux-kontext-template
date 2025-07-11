@@ -1,3 +1,4 @@
+export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server'
 import { r2Storage } from '@/lib/services/r2-storage'
 

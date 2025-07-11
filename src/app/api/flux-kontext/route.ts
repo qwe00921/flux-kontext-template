@@ -1,3 +1,4 @@
+export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server';
 import { FluxKontextService } from '@/lib/flux-kontext';
 import { getServerSession } from 'next-auth';

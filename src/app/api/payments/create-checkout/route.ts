@@ -1,3 +1,4 @@
+export const runtime = 'edge';
 import { NextRequest, NextResponse } from 'next/server'
 import { createCreemCheckout, getCreemProductId } from '@/lib/payment/creem'
 import { getServerSession } from 'next-auth'

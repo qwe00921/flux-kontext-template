@@ -1,3 +1,4 @@
+export const runtime = 'edge';
 import { NextRequest } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
