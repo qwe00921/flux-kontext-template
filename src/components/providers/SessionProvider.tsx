@@ -1,16 +1,10 @@
 "use client"
 
-import { SessionProvider as NextAuthSessionProvider } from "next-auth/react"
-import { ReactNode } from "react"
-
 interface SessionProviderProps {
-  children: ReactNode
+  children: React.ReactNode
 }
 
 export default function SessionProvider({ children }: SessionProviderProps) {
-  return (
-    <NextAuthSessionProvider>
-      {children}
-    </NextAuthSessionProvider>
-  )
+  // 暂时移除 next-auth，直接返回子组件
+  return <>{children}</>
 } 
