@@ -35,7 +35,7 @@ import {
   EyeOff
 } from "lucide-react"
 import Image from "next/image"
-import { useSession } from "next-auth/react"
+// import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 // İģ
 import { generator, common } from "@/lib/content"
