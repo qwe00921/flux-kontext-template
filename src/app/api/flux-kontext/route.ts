@@ -1,12 +1,18 @@
 export const runtime = 'edge';
-import { NextRequest, NextResponse } from 'next/server';
-import { FluxKontextService } from '@/lib/flux-kontext';
-// 暂时移除 next-auth 相关导入
-// import { getServerSession } from 'next-auth';
-// import { authOptions } from '@/lib/auth';
+import { NextRequest, NextResponse } from "next/server"
+import { FluxKontextService } from "@/lib/flux-kontext"
 import { consumeCreditsForImageGeneration, checkUserCredits } from '@/lib/services/credits';
 import { prisma } from '@/lib/database';
-import { checkPromptSafety, checkImageSafety } from '@/lib/content-safety/safe-mode';
+import { ContentSafetyService } from '@/lib/content-safety';
+
+// 初始化内容安全服务
+const contentSafety = new ContentSafetyService({
+  enablePreFilter: true,
+  enablePostFilter: true,
+  enableRealTimeMonitor: true,
+  strictMode: false,
+  providers: []
+});
 
 // Turnstile验证函数 - 优化版本
 async function verifyTurnstileToken(token: string, clientIP: string): Promise<boolean> {
@@ -200,17 +206,15 @@ export async function POST(request: NextRequest) {
         
         try {
           // 检查提示词安全性
-          const promptSafetyResult = await checkPromptSafety(body.prompt);
-          if (!promptSafetyResult.safe) {
-            console.log('❌ Prompt safety check failed:', promptSafetyResult.reasons);
-            return NextResponse.json(
-              { 
-                error: 'Content safety check failed',
-                message: 'Your prompt contains inappropriate content. Please modify your request.',
-                details: promptSafetyResult.reasons
-              },
-              { status: 400 }
-            );
+          const prompt = body.prompt;
+          // 安全检查
+          const promptSafetyResult = await contentSafety.checkPromptSafety(prompt)
+          if (promptSafetyResult && !promptSafetyResult.isSafe) {
+            return NextResponse.json({
+              success: false,
+              error: "Content safety check failed",
+              reason: promptSafetyResult.categories.map(c => c.description).join(', ') || "Unsafe content detected"
+            }, { status: 400 })
           }
           console.log('✅ Prompt safety check passed');
         } catch (error) {
@@ -241,45 +245,38 @@ export async function POST(request: NextRequest) {
       
       const fluxKontext = new FluxKontextService();
       
-      // 根据action类型调用不同的生成方法
+      // 根据操作类型调用不同的方法
       let result;
-      switch (body.action) {
-        case 'generate':
-          result = await fluxKontext.generateImage(body.prompt, {
-            width: body.width || 1024,
-            height: body.height || 1024,
-            num_images: body.num_images || 1,
-            guidance_scale: body.guidance_scale || 7.5,
-            num_inference_steps: body.num_inference_steps || 50,
-            seed: body.seed
-          });
-          break;
-          
-        case 'variations':
-          if (!body.image_url) {
-            throw new Error('Image URL is required for variations');
-          }
-          result = await fluxKontext.generateVariations(body.image_url, {
-            num_images: body.num_images || 1,
-            guidance_scale: body.guidance_scale || 7.5,
-            num_inference_steps: body.num_inference_steps || 50,
-            seed: body.seed
-          });
-          break;
-          
-        case 'inpaint':
-          if (!body.image_url || !body.mask_url) {
-            throw new Error('Image URL and mask URL are required for inpainting');
-          }
-          result = await fluxKontext.inpaintImage(body.image_url, body.mask_url, body.prompt, {
-            guidance_scale: body.guidance_scale || 7.5,
-            num_inference_steps: body.num_inference_steps || 50,
-            seed: body.seed
-          });
-          break;
-          
-        default:
-          throw new Error(`Unsupported action: ${body.action}`);
+      if (body.operation === 'generate') {
+        result = await FluxKontextService.textToImagePro({
+          prompt: body.prompt,
+          aspect_ratio: body.aspect_ratio,
+          seed: body.seed,
+          guidance_scale: body.guidance_scale,
+          num_images: body.num_images || 1,
+          safety_tolerance: body.safety_tolerance,
+          output_format: body.output_format
+        });
+      } else if (body.operation === 'variations') {
+        result = await FluxKontextService.editImagePro({
+          prompt: body.prompt,
+          image_url: body.image_url,
+          seed: body.seed,
+          guidance_scale: body.guidance_scale,
+          num_images: body.num_images || 1,
+          safety_tolerance: body.safety_tolerance,
+          output_format: body.output_format
+        });
+      } else if (body.operation === 'inpaint') {
+        result = await FluxKontextService.editImagePro({
+          prompt: body.prompt,
+          image_url: body.image_url,
+          seed: body.seed,
+          guidance_scale: body.guidance_scale,
+          num_images: body.num_images || 1,
+          safety_tolerance: body.safety_tolerance,
+          output_format: body.output_format
+        });
       }
 
       // ✅ 生成成功
@@ -291,15 +288,14 @@ export async function POST(request: NextRequest) {
       const endTime = Date.now();
       const duration = endTime - startTime;
       
+      // 返回结果
       return NextResponse.json({
         success: true,
-        images: result.images,
-        metadata: {
-          prompt: body.prompt,
-          action: body.action,
-          generation_time: duration,
-          timestamp: new Date().toISOString()
-        }
+        images: result?.images || [],
+        timings: result?.timings,
+        seed: result?.seed,
+        has_nsfw_concepts: result?.has_nsfw_concepts,
+        prompt: body.prompt
       });
 
     };

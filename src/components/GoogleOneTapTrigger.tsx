@@ -1,7 +1,6 @@
 "use client"
 
-// 暂时移除 next-auth 相关功能
+// 已移除 next-auth 相关逻辑，直接展示静态提示
 export function GoogleOneTapTrigger() {
-  // 暂时禁用 Google One Tap Trigger
-  return null
+  return null // demo模式不显示Google登录
 } 

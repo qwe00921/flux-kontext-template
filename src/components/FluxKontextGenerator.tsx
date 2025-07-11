@@ -35,7 +35,6 @@ import {
   EyeOff
 } from "lucide-react"
 import Image from "next/image"
-// import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 // İģ
 import { generator, common } from "@/lib/content"
@@ -90,7 +89,8 @@ interface GenerationRequest {
 
 export function FluxKontextGenerator() {
   const router = useRouter()
-  const { data: session } = useSession()
+  // mock session
+  const session = { user: { email: 'demo@mock.com', credits: 100 } }
   
   // ûֲ̬
   const [userType, setUserType] = useState<UserType>(UserType.ANONYMOUS)
@@ -2463,8 +2463,7 @@ export function FluxKontextGenerator() {
             Generated Images
           </h2>
           <CreditDisplay 
-            showBuyButton={true}
-            className="flex-shrink-0"
+            className="text-sm"
           />
         </div>
 

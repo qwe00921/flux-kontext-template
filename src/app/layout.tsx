@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ClientBody from "./ClientBody";
 import { Analytics } from "@/components/Analytics";
-import SessionProvider from "@/components/providers/SessionProvider";
+import { SessionProvider } from "@/components/providers/SessionProvider";
 import { GoogleOneTap } from "@/components/GoogleOneTap";
 import { GoogleOneTapTrigger } from "@/components/GoogleOneTapTrigger";
 import { StructuredData } from "@/components/StructuredData";
