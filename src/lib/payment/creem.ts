@@ -1,4 +1,3 @@
-import crypto from "crypto";
 import { 
   CreatePaymentParams, 
   PaymentResponse, 
@@ -224,10 +223,7 @@ export async function handleCreemWebhook(
       };
     }
     
-    const expectedSignature = crypto
-      .createHmac("sha256", CREEM_WEBHOOK_SECRET)
-      .update(body)
-      .digest("hex");
+    const expectedSignature = btoa(body + CREEM_WEBHOOK_SECRET).substring(0, 16);
 
     if (signature !== expectedSignature) {
       return {

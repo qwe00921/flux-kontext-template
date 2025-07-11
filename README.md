@@ -440,3 +440,13 @@ FluxKontext.space是一个功能完整的AI图像生成平台，具有：
 - 📄 PAYMENT_SECURITY_GUIDE.md - 支付安全指南
 - 📄 env.example - 环境变量配置示例
 - 📁 scripts/ - 各种检查和设置脚本 
+
+## 2024-07-11 更新日志
+
+- 彻底移除 next-auth 相关依赖、类型和所有调用逻辑
+- 所有 API 路由和组件 mock 登录与积分逻辑，兼容无认证场景
+- 修复所有 TypeScript 类型错误，组件 props 及 API 返回类型全部兼容
+- Cloudflare Pages 可无障碍构建和部署
+- 保留 src/lib/auth.ts 空文件，便于后续如需恢复 next-auth
+
+如需恢复登录功能，请参考历史版本。 
